@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 
 """
-Use GDPC's powerful transformation system.
+AHumanIBelieve's Wizard Tower generator
 """
 
 import sys
-
 from glm import ivec2, ivec3
+import numpy as np
 
-from gdpc import __url__, Editor, Block, Box, Transform
+from gdpc import __url__, Editor, Block, Box, Transform, geometry
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
-from gdpc.vector_tools import addY, dropY
 from gdpc.transform import rotatedBoxTransform, flippedBoxTransform
-from gdpc.geometry import placeBox, placeCheckeredBox
+from gdpc.vector_tools import Y, addY, dropY, line3D, circle, fittingCylinder
 
 
 # The minimum build area size in the XZ-plane for this example.
-MIN_BUILD_AREA_SIZE = ivec2(300, 300)
+MIN_BUILD_AREA_SIZE = ivec2(10, 10)
 
 
 # Create an editor object.
@@ -58,7 +57,25 @@ if any(dropY(buildArea.size) < MIN_BUILD_AREA_SIZE):
     sys.exit(1)
 
 
+print("Loading world slice...")
 buildRect = buildArea.toRect()
+worldSlice = editor.loadWorldSlice(buildRect)
+print("World slice loaded!")
 
+geometry.placeRectOutline(editor, buildRect, 100, Block("glowstone"))
 
+print("placed outline")
 
+heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
+meanHeight = np.mean(heightmap)
+groundCenter = addY(buildRect.center, meanHeight)
+
+cylinder = fittingCylinder(
+    groundCenter + ivec3(-34, 0, -34),
+    groundCenter + ivec3( 34, 40,  34),
+    tube=True
+)
+
+#wallPalette = [Block(id) for id in 4*["stone_bricks"] ["mossy_cobblestone"] ["cobblestone", "polished_andesite"]]
+editor.placeBlock(cylinder, Block("orange_concrete"))
+print("placed tower at")
