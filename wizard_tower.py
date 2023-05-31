@@ -43,7 +43,7 @@ except BuildAreaNotSetError:
     print(
         "Error: failed to get the build area!\n"
         "Make sure to set the build area with the /setbuildarea command in-game.\n"
-        "For example: /setbuildarea ~0 0 ~0 ~64 200 ~64"
+        "For example: /setbuildarea 0 0 0 50 319 0"
     )
     sys.exit(1)
 
@@ -71,11 +71,17 @@ meanHeight = np.mean(heightmap)
 groundCenter = addY(buildRect.center, meanHeight)
 
 cylinder = fittingCylinder(
-    groundCenter + ivec3(-34, 0, -34),
-    groundCenter + ivec3( 34, 40,  34),
+    groundCenter + ivec3(-10, 0, -10),
+    groundCenter + ivec3( 10, 40, 10),
     tube=True
 )
+cylinderInside = fittingCylinder(
+    groundCenter + ivec3(-9, 0, -9),
+    groundCenter + ivec3( 9, 40, 9),
+    tube=False
+)
 
-#wallPalette = [Block(id) for id in 4*["stone_bricks"] ["mossy_cobblestone"] ["cobblestone", "polished_andesite"]]
-editor.placeBlock(cylinder, Block("orange_concrete"))
+wallPalette = [Block(id) for id in 3*["stone_bricks"] + ["cobblestone", "polished_andesite"]]
+editor.placeBlock(cylinder, wallPalette)
+editor.placeBlock(cylinderInside, Block("air"))
 print("placed tower at")
