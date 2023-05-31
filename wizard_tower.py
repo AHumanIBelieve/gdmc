@@ -12,10 +12,12 @@ from gdpc import __url__, Editor, Block, Box, Transform, geometry
 from gdpc.exceptions import InterfaceConnectionError, BuildAreaNotSetError
 from gdpc.transform import rotatedBoxTransform, flippedBoxTransform
 from gdpc.vector_tools import Y, addY, dropY, line3D, circle, fittingCylinder
+from gdpc.geometry import placeBox, placeCuboid
 
 
 # The minimum build area size in the XZ-plane for this example.
 MIN_BUILD_AREA_SIZE = ivec2(10, 10)
+wallPalette = [Block(id) for id in 3*["stone_bricks"] + ["cobblestone", "polished_andesite"]]
 
 
 # Create an editor object.
@@ -59,16 +61,23 @@ if any(dropY(buildArea.size) < MIN_BUILD_AREA_SIZE):
 
 print("Loading world slice...")
 buildRect = buildArea.toRect()
+platformRect = buildRect.centeredSubRect((51,50))
+placeBox(editor, platformRect.toBox(100,  1), wallPalette)
+print("placed floor")
+placeBox(editor, platformRect.toBox(101, 100), Block("air")) # Clear some space
+print("removed blocking air")
 worldSlice = editor.loadWorldSlice(buildRect)
 print("World slice loaded!")
 
-geometry.placeRectOutline(editor, buildRect, 100, Block("glowstone"))
+geometry.placeRectOutline(editor, buildRect, 100, Block("glwstone"))
 
 print("placed outline")
 
 heightmap = worldSlice.heightmaps["MOTION_BLOCKING_NO_LEAVES"]
 meanHeight = np.mean(heightmap)
 groundCenter = addY(buildRect.center, meanHeight)
+
+
 
 cylinder = fittingCylinder(
     groundCenter + ivec3(-10, 0, -10),
@@ -81,7 +90,6 @@ cylinderInside = fittingCylinder(
     tube=False
 )
 
-wallPalette = [Block(id) for id in 3*["stone_bricks"] + ["cobblestone", "polished_andesite"]]
 editor.placeBlock(cylinder, wallPalette)
 editor.placeBlock(cylinderInside, Block("air"))
 print("placed tower at")
